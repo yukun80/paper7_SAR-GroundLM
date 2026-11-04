@@ -1,0 +1,67 @@
+# Dataset images
+*.tif
+*.png
+
+# Dataset tables, annotations, and indexes
+*.csv
+*.json
+*.parquet
+
+# Downloaded archives and split archives
+*.zip
+*.zip.[0-9]*
+
+# Download caches and temporary files
+.cache/
+*.aria2
+*.incomplete
+*.lock
+*.metadata
+
+# Documents throughout the project (case-insensitive extensions)
+*.[pP][dD][fF]
+
+# Word documents and templates
+*.[dD][oO][cC]
+*.[dD][oO][cC][xX]
+*.[dD][oO][cC][mM]
+*.[dD][oO][tT]
+*.[dD][oO][tT][xX]
+*.[dD][oO][tT][mM]
+
+# Excel workbooks and templates
+*.[xX][lL][sS]
+*.[xX][lL][sS][xX]
+*.[xX][lL][sS][mM]
+*.[xX][lL][sS][bB]
+*.[xX][lL][tT]
+*.[xX][lL][tT][xX]
+*.[xX][lL][tT][mM]
+
+# PowerPoint presentations, slide shows, and templates
+*.[pP][pP][tT]
+*.[pP][pP][tT][xX]
+*.[pP][pP][tT][mM]
+*.[pP][oO][tT]
+*.[pP][oO][tT][xX]
+*.[pP][oO][tT][mM]
+*.[pP][pP][sS]
+*.[pP][pP][sS][xX]
+*.[pP][pP][sS][mM]
+
+# Plain and rich text (keep Markdown documentation)
+*.[tT][xX][tT]
+*.[tT][eE][xX][tT]
+*.[rR][tT][fF]
+
+# OpenDocument documents and templates
+*.[oO][dD][tT]
+*.[oO][tT][tT]
+*.[oO][dD][sS]
+*.[oO][tT][sS]
+*.[oO][dD][pP]
+*.[oO][tT][pP]
+*.[oO][dD][gG]
+*.[oO][tT][gG]
+*.[oO][dD][fF]
+*.[oO][dD][mM]
