@@ -1,6 +1,10 @@
+.gitignore
+.agents
+
 # Dataset images
 *.tif
 *.png
+*.jpg
 
 # Dataset tables, annotations, and indexes
 *.csv
@@ -65,3 +69,14 @@
 *.[oO][tT][gG]
 *.[oO][dD][fF]
 *.[oO][dD][mM]
+
+# Generated pilot assets; source datasets remain read-only.
+/data/
+/models/
+/artifacts/
+__pycache__/
+*.pyc
+*.egg-info/
+!configs/
+!configs/*.json
+

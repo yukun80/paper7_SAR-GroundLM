@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sar-groundlm"
+version = "0.1.0"
+description = "Reproducible Qwen3.5-native SAR segmentation and region-language pilot"
+requires-python = ">=3.11"
+dependencies = [
+  "torch>=2.8,<2.9",
+  "transformers==5.3.0",
+  "numpy>=2,<3",
+  "Pillow>=11",
+  "scipy>=1.16",
+  "rasterio>=1.4",
+  "pyarrow>=20",
+  "matplotlib>=3.10",
+]
+
+[project.scripts]
+sar-groundlm = "sar_groundlm.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["sar_groundlm*"]
