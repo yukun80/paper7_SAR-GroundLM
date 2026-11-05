@@ -1,6 +1,6 @@
 # 数据与输入
 
-当前使用第二轮固定小样本；原始资料保持只读。完整选取记录见[当前清单](../data/pilot_v2/manifest.json)。
+现行A/B框架复用第二轮固定小样本，不重划训练、开发或原留出；原始资料保持只读。完整选取记录见[当前清单](../data/pilot_v2/manifest.json)。
 
 ## 来源与划分
 
@@ -45,7 +45,9 @@ SAR-OVSeg 的训练、开发、留出各一半灰度、一半双通道；SARLANG
 
 TerraCoT 的 139 个本地分片中仅 3 个可读，共 15,000 条。其说明涉及光学图像和 SAR 合成图，不能确认文字由本轮输入独立支持，零条进入训练。
 
-尚缺独立人工区域语言评价集及 HJ、HS、LT 指定测试资料。未知来源不猜测，缺失资料不以同名卫星图片替代。
+独立人工区域语言评价尚缺审核。新框架在模型和规则封存后，另选最多100张未用于历史分析、训练或开发且排除近似重复的图像，生成审核候选；原64张留出保持不变。候选与批准结果单独保存，审核者、时间和逐题决定必须可追溯。
+
+原生训练问答继续使用SARLANG；TerraCoT不进入本轮。HJ、HS、LT跨域资料不属于当前任务，未知来源不猜测。
 
 [SARLANG](https://github.com/Jimmyxichen/SARLANG-1M) · [SARDet](https://github.com/zcablii/SARDet_100K) · [TerraCoT](https://huggingface.co/datasets/sy1998/TerraCoT)
 

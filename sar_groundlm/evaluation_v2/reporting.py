@@ -6,6 +6,12 @@ from ..engine.budget import Budget
 
 
 def report(cfg):
+    # Once the core protocol is adopted, legacy reporting is read-only. Historical
+    # artifacts remain valid evidence but cannot replace the current research page.
+    if (ROOT/'configs/core_hypothesis.json').exists():
+        saved=cfg.output/'acceptance.json'
+        return {**(read_json(saved) if saved.exists() else {}),
+                'historical_read_only':True,'current_report':'./run.sh --config configs/core_hypothesis.json report'}
     data=read_json(cfg.output/'data_validation.json')
     probe_path=cfg.output/'probe/verification.json'
     probe=read_json(probe_path) if probe_path.exists() else {}

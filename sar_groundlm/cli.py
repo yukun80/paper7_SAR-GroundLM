@@ -4,6 +4,11 @@ import sys
 
 def main():
     if '--config' in sys.argv[1:]:
+        from .common import read_json
+        index=sys.argv.index('--config')
+        if index+1<len(sys.argv) and read_json(sys.argv[index+1]).get('protocol')=='core_hypothesis':
+            from .core.cli import main as core
+            return core()
         from .engine.cli import main as second_round
         return second_round()
     from .legacy_v1.cli import main as first_round

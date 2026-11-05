@@ -14,7 +14,7 @@ from sar_groundlm.documentation import refresh_results, update_scale_summary
 
 TOPICS = {'usage.md', 'data.md', 'model.md', 'evaluation.md', 'results.md',
           'diagnosis.md', 'next-design.md', 'references.md',
-          'third-party-notices.md', 'maintenance.md'}
+          'third-party-notices.md', 'maintenance.md', 'paper-design.md'}
 
 
 class DocumentationTests(unittest.TestCase):
@@ -54,20 +54,24 @@ class DocumentationTests(unittest.TestCase):
             root = Path(td)
             cfg = self.fixture(root)
             before = {p: p.read_bytes() for p in (root / 'artifacts').rglob('*') if p.is_file()}
+            paper = (root / 'docs/paper-design.md').read_bytes()
             with patch.object(reporting, 'ROOT', root):
                 result = reporting.report(cfg)
                 reporting.report(cfg)
+            self.assertEqual((root / 'docs/paper-design.md').read_bytes(), paper)
             self.assertFalse(result['learning_gate_passed'])
             text = (root / 'docs/results.md').read_text()
             self.assertIn('38.13%', text)
             self.assertIn('43.98%', text)
-            self.assertIn('49.85', text)
+            budget = json.loads(cfg.budget.read_text())
+            self.assertIn(f"{(budget['limit_seconds']-budget['used_seconds'])/60:.2f}", text)
             self.assertIn('42 项', text)
             self.assertEqual({p.name for p in (root / 'docs').glob('*.md')}, TOPICS)
             manifest = json.loads((cfg.output / 'delivery_manifest.json').read_text())
             paths = {r['path'] for r in manifest['files']}
             self.assertIn('docs/third-party-notices.md', paths)
             self.assertIn('AGENTS.md', paths)
+            self.assertIn('docs/paper-design.md', paths)
             for path, value in before.items():
                 self.assertEqual(path.read_bytes(), value, str(path))
 
@@ -79,6 +83,7 @@ class DocumentationTests(unittest.TestCase):
             report = json.loads((root / 'artifacts/diagnosis_v1/report.json').read_text())
             path = root / 'docs/diagnosis.md'
             before = path.read_text()
+            paper = (root / 'docs/paper-design.md').read_bytes()
             # 图像生成逻辑未改动；本检查只验证发布边界，不能为整理文档重算预测。
             with patch.object(reporting, 'ROOT', root), patch.object(reporting, 'figures') as plots:
                 reporting.publish(cfg, root / 'artifacts/diagnosis_v1', report)
@@ -86,6 +91,7 @@ class DocumentationTests(unittest.TestCase):
                 reporting.publish(cfg, root / 'artifacts/diagnosis_v1', report)
                 self.assertEqual(plots.call_count, 2)
             self.assertEqual(first, path.read_text())
+            self.assertEqual((root / 'docs/paper-design.md').read_bytes(), paper)
             self.assertEqual(before.split('<!-- scale-summary:start -->')[0], first.split('<!-- scale-summary:start -->')[0])
             self.assertIn('49.75%', first)
             report['reproduced'] = False

@@ -11,6 +11,12 @@ def _read(root, relative):
 def refresh_results(root):
     """每阶段单独列示，缺少记录时留空，不能用后续成绩替代冻结检查。"""
     root = Path(root)
+    core = root/'artifacts/core_hypothesis/report.json'
+    if (root/'configs/core_hypothesis.json').exists():
+        if not core.exists():
+            return root/'docs/results.md'
+        from .core.reporting import publish_results
+        return publish_results(root, json.loads(core.read_text()))
     first = _read(root, 'artifacts/pilot_v1/acceptance.json')
     probe = _read(root, 'artifacts/pilot_v2/probe/verification.json')
     diagnostic = _read(root, 'artifacts/diagnosis_v1/report.json')
