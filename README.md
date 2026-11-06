@@ -7,6 +7,7 @@
 ## 文档目录
 
 - [小论文算法设计思路](docs/paper-design.md)
+- [目标架构与制图提示词（待实施设计）](docs/architecture/README.md)
 - [运行说明](docs/usage.md)
 - [数据与输入](docs/data.md)
 - [当前模型与对照](docs/model.md)

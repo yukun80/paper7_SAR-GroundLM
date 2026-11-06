@@ -15,6 +15,16 @@ from sar_groundlm.documentation import refresh_results, update_scale_summary
 TOPICS = {'usage.md', 'data.md', 'model.md', 'evaluation.md', 'results.md',
           'diagnosis.md', 'next-design.md', 'references.md',
           'third-party-notices.md', 'maintenance.md', 'paper-design.md'}
+ARCHITECTURE_TOPICS = {
+    'architecture/README.md', 'architecture/design.md',
+    'architecture/prompts/overview.md', 'architecture/prompts/region-facts.md',
+    'architecture/prompts/hard-pairs.md', 'architecture/prompts/bidirectional-alignment.md',
+}
+
+
+def architecture_snapshot(root):
+    return {p.relative_to(root).as_posix(): p.read_bytes()
+            for p in (root / 'docs/architecture').rglob('*') if p.is_file()}
 
 
 class DocumentationTests(unittest.TestCase):
@@ -35,9 +45,11 @@ class DocumentationTests(unittest.TestCase):
                                budget=root / 'artifacts/pilot_v1/budget.json')
 
     def test_all_local_links_and_small_topic_inventory(self):
-        self.assertEqual({p.name for p in (ROOT / 'docs').rglob('*.md')}, TOPICS)
+        docs = ROOT / 'docs'
+        pages = sorted(docs.rglob('*.md'))
+        self.assertEqual({p.relative_to(docs).as_posix() for p in pages}, TOPICS | ARCHITECTURE_TOPICS)
         self.assertFalse((ROOT / 'docs/archive').exists())
-        for p in [ROOT / 'README.md', ROOT / 'AGENTS.md', *sorted((ROOT / 'docs').glob('*.md'))]:
+        for p in [ROOT / 'README.md', ROOT / 'AGENTS.md', *pages]:
             text = p.read_text()
             self.assertLessEqual(len(text.splitlines()), 100, str(p))
             for target in re.findall(r'\]\(([^)]+)\)', text):
@@ -47,18 +59,24 @@ class DocumentationTests(unittest.TestCase):
         index = (ROOT / 'README.md').read_text()
         for name in TOPICS:
             self.assertIn(f'(docs/{name})', index)
+        self.assertIn('(docs/architecture/README.md)', index)
+        architecture_index = (docs / 'architecture/README.md').read_text()
+        for name in ARCHITECTURE_TOPICS - {'architecture/README.md'}:
+            self.assertIn(f'({Path(name).relative_to("architecture").as_posix()})', architecture_index)
 
     def test_current_report_uses_real_records_in_temporary_directory(self):
         from sar_groundlm.evaluation_v2 import reporting
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             cfg = self.fixture(root)
+            architecture = architecture_snapshot(root)
             before = {p: p.read_bytes() for p in (root / 'artifacts').rglob('*') if p.is_file()}
             paper = (root / 'docs/paper-design.md').read_bytes()
             with patch.object(reporting, 'ROOT', root):
                 result = reporting.report(cfg)
                 reporting.report(cfg)
             self.assertEqual((root / 'docs/paper-design.md').read_bytes(), paper)
+            self.assertEqual(architecture_snapshot(root), architecture)
             self.assertFalse(result['learning_gate_passed'])
             text = (root / 'docs/results.md').read_text()
             self.assertIn('38.13%', text)
@@ -80,6 +98,7 @@ class DocumentationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             cfg = self.fixture(root)
+            architecture = architecture_snapshot(root)
             report = json.loads((root / 'artifacts/diagnosis_v1/report.json').read_text())
             path = root / 'docs/diagnosis.md'
             before = path.read_text()
@@ -99,6 +118,31 @@ class DocumentationTests(unittest.TestCase):
             self.assertIn('停止圈选规则', path.read_text())
             self.assertNotIn('49.75%', path.read_text())
             self.assertFalse((root / 'docs/ground-scale-diagnosis.md').exists())
+            self.assertEqual(architecture_snapshot(root), architecture)
+
+    def test_core_refresh_and_historical_report_preserve_architecture(self):
+        from sar_groundlm.evaluation_v2 import reporting
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            cfg = self.fixture(root)
+            for name in ('configs/core_hypothesis.json', 'artifacts/core_hypothesis/report.json'):
+                destination = root / name
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / name, destination)
+            before = {p.relative_to(root): p.read_bytes() for p in root.rglob('*') if p.is_file()}
+            result_path = refresh_results(root)
+            first = result_path.read_bytes()
+            refresh_results(root)
+            self.assertEqual(result_path.read_bytes(), first)
+            with patch.object(reporting, 'ROOT', root):
+                result = reporting.report(cfg)
+            self.assertTrue(result['historical_read_only'])
+            self.assertEqual(result_path.read_bytes(), first)
+            after = {p.relative_to(root): p.read_bytes() for p in root.rglob('*') if p.is_file()}
+            self.assertEqual(before.keys(), after.keys())
+            for path in before:
+                if path != Path('docs/results.md'):
+                    self.assertEqual(before[path], after[path], str(path))
 
     def test_missing_markers_fail_without_overwriting_manual_document(self):
         with tempfile.TemporaryDirectory() as td:
